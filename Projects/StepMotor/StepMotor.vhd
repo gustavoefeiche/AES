@@ -12,10 +12,17 @@ use ieee.std_logic_1164.all;
 entity StepMotor is
 
 	port (
-		clk    : in	 std_logic;
-		input	 : in	 std_logic;
-		reset	 : in	 std_logic;
-		fasesMotor : out std_logic_vector(3 downto 0)
+		clk    : in	 std_logic := '0';
+		reset	 : in	 std_logic := '0';
+		
+		motor : out std_logic_vector(3 downto 0):= (others => '0');
+		
+		-- Avalon Memmory Mapped Slave
+	  avs_address     : in  std_logic_vector(3 downto 0)  := (others => '0'); 
+	  avs_read        : in  std_logic                     := '0';             
+	  avs_readdata    : out std_logic_vector(31 downto 0) := (others => '0'); 
+	  avs_write       : in  std_logic                     := '0';           
+	  avs_writedata   : in  std_logic_vector(31 downto 0) := (others => '0')  
 	);
 
 end entity;
@@ -27,44 +34,97 @@ architecture rtl of StepMotor is
 
 	-- Register to hold the current state
 	signal state : state_type;
-	signal enable : std_logic := '0';
+	signal enable : std_logic;
+	signal timer_trigger : std_logic;
+	signal timerAck : std_logic;
+	
+	signal counterTimer : integer := 12500000;
 
 begin
+
+	process(clk)
+	begin
+		if (rising_edge(clk)) then
+			if (avs_write = '1') then
+				if(avs_address = "0000") then
+					enable <= avs_writedata(0);
+--				elsif(avs_address = "0001") then
+--					enable <= avs_writedata(0);
+--					counterTimer <= avs_writedata(31 downto 5);
+				end if;
+			end if;
+		end if;
+	end process;
 
 	process (clk, reset)
 	begin
 
 		if reset = '1' then
-			state <= s0;
+			state <= s_stopped;
 
 		elsif (rising_edge(clk)) then
 			case state is
+				
 				when s_stopped=>
 					if enable = '1' then
 						state <= s_step1;
-						timerEn <= '1';
+						timer_trigger <= '1';
 					else
-						state <= s0;
+						state <= s_stopped;
 					end if;
+					
 				when s_step1=>
-					timerEn <= '0';
-					if input = '1' then
-						state <= s2;
+					timer_trigger <= '0';
+					if enable = '1' then
+						if timerAck = '1' then
+							state <= s_step2;
+							timer_trigger <= '1';
+						else
+							state <= s_step1;
+						end if;
 					else
-						state <= s1;
+						state <= s_stopped;
 					end if;
-				when s2=>
-					if input = '1' then
-						state <= s3;
+						
+				when s_step2=>
+					timer_trigger <= '0';
+					if enable = '1' then
+						if timerAck = '1' then
+							state <= s_step3;
+							timer_trigger <= '1';
+						else
+							state <= s_step2;
+							timer_trigger <= '1';
+						end if;
 					else
-						state <= s2;
-					end if;
-				when s3=>
-					if input = '1' then
-						state <= s3;
+						state <= s_stopped;
+					end if;	
+					
+				when s_step3=>
+					timer_trigger <= '0';
+					if enable = '1' then
+						if timerAck = '1' then
+							state <= s_step4;
+							timer_trigger <= '1';
+						else
+							state <= s_step3;
+						end if;
 					else
-						state <= s1;
-					end if;
+						state <= s_stopped;
+					end if;	
+					
+				when s_step4=>
+					timer_trigger <= '0';
+					if enable = '1' then
+						if timerAck = '1' then
+							state <= s_step1;
+							timer_trigger <= '1';
+						else
+							state <= s_step4;
+						end if;
+					else
+						state <= s_stopped;
+					end if;	
 
 			end case;
 							
@@ -79,15 +139,15 @@ begin
 	begin
 			case state is
 				when s_stopped=>
-					fasesMotor  <= "0000";
+					motor <= "0000";
 				when s_step1=>
-					faesesMotor <= "0001";
+					motor <= "0001";
 				when s_step2=>
-					faesesMotor <= "0010";
+					motor <= "0010";
 				when s_step3=>
-					faesesMotor <= "0100";
+					motor <= "0100";
 				when s_step4=>
-					faesesMotor <= "1000";
+					motor <= "1000";
 			end case;
 	end process;
 
@@ -100,8 +160,8 @@ begin
 			timerAck <= '0';
 			enable_fixo := '0';
 		elsif (rising_edge(clk)) then
-			if(timerEn_pulso = '1' || enable_fixo = '1') then
-				if(couter < XXXXXXXXX) then
+			if(timer_trigger = '1' or enable_fixo = '1') then
+				if(counter < counterTimer) then
 					timerAck <= '0';
 					counter  := counter +1;
 					enable_fixo  := '1';
