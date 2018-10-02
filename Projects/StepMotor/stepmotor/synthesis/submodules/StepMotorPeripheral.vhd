@@ -29,28 +29,31 @@ end entity;
 
 architecture rtl of StepMotorPeripheral is
 
-	-- Build an enumerated type for the state machine
 	type state_type is (s_stopped, s_step1, s_step2, s_step3, s_step4);
 
-	-- Register to hold the current state
 	signal state : state_type;
-	signal enable : std_logic;
+	signal enable : std_logic := '1';
 	signal timer_trigger : std_logic;
 	signal timerAck : std_logic;
 	
-	signal counterTimer : integer := 12500000;
+	signal counterTimer : integer := 250000;
+	signal direction : std_logic := '0';
+	signal steps : integer := 0;
 
 begin
 
-	process(clk)
+	avalon: process(clk)
 	begin
 		if (rising_edge(clk)) then
 			if (avs_write = '1') then
 				if(avs_address = "0000") then
-					enable <= avs_writedata(0);
---				elsif(avs_address = "0001") then
 --					enable <= avs_writedata(0);
---					counterTimer <= avs_writedata(31 downto 5);
+--				elsif(avs_address = "0001") then
+--					counterTimer <= to_integer(unsigned(avs_writedata));
+--				elsif(avs_address = "0010") then
+--					direction <= avs_writedata(0);
+--				elsif(avs_address = "0011") then
+--					steps <= to_integer(unsigned(avs_writedata));
 				end if;
 			end if;
 		end if;

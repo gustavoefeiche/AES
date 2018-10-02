@@ -3,10 +3,7 @@ use IEEE.std_logic_1164.all;
 
 entity topLevel is
     port (
-        -- Gloabals
-        fpga_clk_50        : in  std_logic;             -- clock.clk
-		  
-        -- I/Os
+        fpga_clk_50        : in  std_logic;
         fpga_led_pio       : out std_logic_vector(5 downto 0);
 		  fpga_motor_pio     : out std_logic_vector(3 downto 0)
 	);

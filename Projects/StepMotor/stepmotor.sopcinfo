@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <EnsembleReport name="stepmotor" kind="stepmotor" version="1.0" fabric="QSYS">
  <!-- Format version 16.0 211 (Future versions may contain additional information.) -->
- <!-- 2018.09.25.09:46:03 -->
+ <!-- 2018.10.02.11:30:33 -->
  <!-- A collection of modules and connections -->
  <parameter name="AUTO_GENERATION_ID">
   <type>java.lang.Integer</type>
-  <value>1537879563</value>
+  <value>1538490633</value>
   <derived>false</derived>
   <enabled>true</enabled>
   <visible>false</visible>
