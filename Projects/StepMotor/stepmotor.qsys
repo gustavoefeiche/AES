@@ -162,6 +162,14 @@
          type = "String";
       }
    }
+   element stepmotor
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
 }
 ]]></parameter>
  <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
@@ -195,7 +203,9 @@
    internal="SMController_0.conduit_end"
    type="conduit"
    dir="end" />
- <module name="SMController_0" kind="SMController" version="1.0" enabled="1" />
+ <module name="SMController_0" kind="SMController" version="1.0" enabled="1">
+  <parameter name="CLK_FREQ" value="50000000" />
+ </module>
  <module name="clk_0" kind="clock_source" version="16.0" enabled="1">
   <parameter name="clockFrequency" value="50000000" />
   <parameter name="clockFrequencyKnown" value="true" />
