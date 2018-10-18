@@ -2,7 +2,13 @@
 *.qws
 *.sdc
 *.txt
+*.tcl~
+*.csv
+*.spd
+*.sopcinfo
 db/
 incremental_db/
 simulation/
 output_files/
+.qsys_edit/
+stepmotor/
