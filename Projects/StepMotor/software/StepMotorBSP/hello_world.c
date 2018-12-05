@@ -5,18 +5,16 @@
 
 // LED Peripheral
 #define REG_DATA_OFFSET 1
+#define SM_ENABLE
 
 int main(void) {
- volatile unsigned int *p_sm = (unsigned int *) SMCONTROLLER_0_BASE;
+	volatile unsigned int *p_sm = (unsigned int *) SMCONTROLLER_0_BASE;
 
-  while(1) {
-	  *(p_sm+2) = (0x0);
-	  *(p_sm) = (0x1);
-	  usleep(1000000);
-	  *(p_sm+2) = (0x1);
-//	  *(p_sm) = (0x0);
-	  usleep(1000000);
-  }
+	*(p_sm+3) = 2048;
 
-  return 0;
+	while(1) {
+		*(p_sm) = (0x1);
+	}
+
+	return 0;
 }

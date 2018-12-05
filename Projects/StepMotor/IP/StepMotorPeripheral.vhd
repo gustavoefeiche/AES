@@ -8,6 +8,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity StepMotorPeripheral is
 	port (
@@ -31,7 +32,10 @@ architecture rtl of StepMotorPeripheral is
 	type state_type is (s_stopped, s_step1, s_step2, s_step3, s_step4);
 
 	signal state : state_type;
+	signal enableAck : std_logic;
+	signal state_controlled : std_logic := '0';
 	signal enable : std_logic := '0';
+	signal start : std_logic := '0';
 	signal timer_trigger : std_logic;
 	signal timerAck : std_logic;
 	
@@ -45,38 +49,54 @@ begin
 	avalon: process(clk)
 	begin
 		if (rising_edge(clk)) then
+			steps <= 0;
+			
+			if(enableAck = '1') then
+				enable <= '0';
+			end if;
+			
 			if (avs_write = '1') then
 				if(avs_address = "0000") then
 					enable <= avs_writedata(0);
---					enable <= '0';
---				elsif(avs_address = "0001") then
---					counterTimer <= to_integer(unsigned(avs_writedata));
+				elsif(avs_address = "0001") then
+					counterTimer <= to_integer(unsigned(avs_writedata));
 				elsif(avs_address = "0010") then
 					cw <= avs_writedata(0);
---				elsif(avs_address = "0011") then
---					steps <= to_integer(unsigned(avs_writedata));
+				elsif(avs_address = "0011") then
+					steps <= to_integer(unsigned(avs_writedata));
 				end if;
+
 			end if;
 		end if;
 	end process;
 
 	process (clk, reset)
+	
+		variable step_count : integer := 0;
+		
 	begin
-
+	
 		if reset = '1' then
 			state <= s_stopped;
+			enableAck <= '0';
 
 		elsif (rising_edge(clk)) then
 			case state is
 				
 				when s_stopped=>
+					enableAck <= '0';
 					if enable = '1' then
-						if cw = '1' then
-							state <= s_step1;
+						step_count := steps;
+						if step_count = 0 then
+							state <= s_stopped;
 						else
-							state <= s_step4;
+							if cw = '1' then
+								state <= s_step1;
+							else
+								state <= s_step4;
+							end if;
+							timer_trigger <= '1';
 						end if;
-						timer_trigger <= '1';
 					else
 						state <= s_stopped;
 					end if;
@@ -85,12 +105,18 @@ begin
 					timer_trigger <= '0';
 					if enable = '1' then
 						if timerAck = '1' then
-							if cw = '1' then
-								state <= s_step2;
+							step_count := step_count - 1;
+							if step_count = 0 then
+								state <= s_stopped;
+								enableAck <= '1';
 							else
-								state <= s_step4;
+								if cw = '1' then
+									state <= s_step2;
+								else
+									state <= s_step4;
+								end if;
+								timer_trigger <= '1';
 							end if;
-							timer_trigger <= '1';
 						else
 							state <= s_step1;
 						end if;
@@ -102,12 +128,18 @@ begin
 					timer_trigger <= '0';
 					if enable = '1' then
 						if timerAck = '1' then
-							if cw = '1' then
-								state <= s_step3;
+							step_count := step_count - 1;
+							if step_count = 0 then
+								state <= s_stopped;
+								enableAck <= '1';
 							else
-								state <= s_step1;
+								if cw = '1' then
+									state <= s_step3;
+								else
+									state <= s_step1;
+								end if;
+								timer_trigger <= '1';
 							end if;
-							timer_trigger <= '1';
 						else
 							state <= s_step2;
 						end if;
@@ -119,12 +151,18 @@ begin
 					timer_trigger <= '0';
 					if enable = '1' then
 						if timerAck = '1' then
-							if cw = '1' then
-								state <= s_step4;
+							step_count := step_count - 1;
+							if step_count = 0 then
+								state <= s_stopped;
+								enableAck <= '1';
 							else
-								state <= s_step2;
+								if cw = '1' then
+									state <= s_step4;
+								else
+									state <= s_step2;
+								end if;
+								timer_trigger <= '1';
 							end if;
-							timer_trigger <= '1';
 						else
 							state <= s_step3;
 						end if;
@@ -136,12 +174,18 @@ begin
 					timer_trigger <= '0';
 					if enable = '1' then
 						if timerAck = '1' then
-							if cw = '1' then
-								state <= s_step1;
-							else
-								state <= s_step3;
+							step_count := step_count - 1;
+							if step_count = 0 then
+								state <= s_stopped;
+								enableAck <= '1';
+   						else
+								if cw = '1' then
+									state <= s_step1;
+								else
+									state <= s_step3;
+								end if;
+								timer_trigger <= '1';
 							end if;
-							timer_trigger <= '1';
 						else
 							state <= s_step4;
 						end if;

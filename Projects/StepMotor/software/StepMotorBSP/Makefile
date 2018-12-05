@@ -142,8 +142,7 @@ ACDS_VERSION := 16.0
 ELF := StepMotorBSP.elf
 
 # Paths to C, C++, and assembly source files.
-C_SRCS += hello_world.c
-C_SRCS += stepmotor.c
+C_SRCS := hello_world.c
 CXX_SRCS :=
 ASM_SRCS :=
 
