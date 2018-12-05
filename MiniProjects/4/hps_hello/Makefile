@@ -7,7 +7,7 @@ HWLIBS_ROOT = $(SOCEDS_HWLIB)
 CFLAGS = -g -Wall -Werror -I$(HWLIBS_ROOT)include -I$(HWLIBS_ROOT)include/$(ALT_DEVICE_FAMILY) -D$(ALT_DEVICE_FAMILY)
 LDFLAGS = -g -Wall -Werror
 
-CROSS_COMPILE = arm-linux-gnueabihf-
+CROSS_COMPILE = $(GCC_Linaro)/arm-linux-gnueabihf-
 CC = $(CROSS_COMPILE)gcc
 LD = $(CROSS_COMPILE)gcc
 ARCH = arm
