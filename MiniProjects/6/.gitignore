@@ -1,8 +1,0 @@
-*.bak
-*.qws
-*.sdc
-*.txt
-db/
-incremental_db/
-simulation/
-output_files/
